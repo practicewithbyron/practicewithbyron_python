@@ -70,8 +70,8 @@ app.add_middleware(
 
 load_dotenv()
 
-secret_key = os.getenv("JWT_KEY")
-api_key = os.getenv("API_KEY")
+secret_key = os.environ("JWT_KEY")
+api_key = os.environ("API_KEY")
 
 headers = {
     'Content-Type': 'application/json',
