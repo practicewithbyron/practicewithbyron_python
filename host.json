@@ -14,7 +14,10 @@
   },
   "extensions": {
     "http": {
-        "routePrefix": ""
+        "routePrefix": "",
+        "allowedOrigins": [
+          "https://ambitious-meadow-0c9567d03.3.azurestaticapps.net"
+        ]
     }
   }
 }
