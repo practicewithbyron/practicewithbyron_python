@@ -82,7 +82,7 @@ headers = {
 responseHeaders = {
     "Access-Control-Allow-Origin": "https://ambitious-meadow-0c9567d03.3.azurestaticapps.net",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-    "Acess-control-Allow-Headers": "Content-Type"
+    "Access-control-Allow-Headers": "Content-Type"
 }
 
 
