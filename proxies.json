@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json.schemastore.org/proxies",
+    "proxies": {
+      "corsProxy": {
+        "matchCondition": {
+          "route": "/api/{*path}"
+        },
+        "backendUri": "https://your-function-app.azurewebsites.net/api/{*path}",
+        "methods": ["GET", "POST", "PUT", "DELETE"],
+        "allowedOrigins": ["https://ambitious-meadow-0c9567d03.3.azurestaticapps.net"]
+      }
+    }
+  }
+  
