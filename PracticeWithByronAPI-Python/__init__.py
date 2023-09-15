@@ -79,6 +79,12 @@ headers = {
     'api-key': api_key,
 }
 
+responseHeaders = {
+    "Access-Control-Allow-Origin": "https://ambitious-meadow-0c9567d03.3.azurestaticapps.net",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+    "Acess-control-Allow-Headers": "Content-Type"
+}
+
 
 class TokenAPIModel(BaseModel):
     token: str
@@ -270,7 +276,7 @@ async def login(userAPIModel: UserAPIModel):
     """
     if not IsTruthy(userAPIModel.email, userAPIModel.password):
         raise HTTPException(
-            status_code=400, detail="Invalid email or password")
+            status_code=400, detail="Invalid email or password", headers=responseHeaders)
 
     payload = {
         "email": userAPIModel.email
@@ -280,7 +286,8 @@ async def login(userAPIModel: UserAPIModel):
         "POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/readUser", headers=headers, params=payload)
 
     if (response.text == "null"):
-        raise HTTPException(status_code=401, detail="User not found")
+        raise HTTPException(
+            status_code=401, detail="User not found", headers=responseHeaders)
 
     hashed_password = bcrypt.hashpw(userAPIModel.password.encode(
         'utf-8'), b'$2b$12$mCbAq1xSc21dn8o2Rj5Kou').decode("utf-8")
@@ -288,7 +295,8 @@ async def login(userAPIModel: UserAPIModel):
     json_response = json.loads(response.text)
 
     if (json_response["password"] != hashed_password):
-        raise HTTPException(status_code=401, detail="Incorrect password")
+        raise HTTPException(
+            status_code=401, detail="Incorrect password", headers=responseHeaders)
 
     # Create jwt
     jwt = CreateJWT({"id": json_response["_id"], "email": userAPIModel.email, "catalog": json_response["catalog"],
@@ -296,10 +304,10 @@ async def login(userAPIModel: UserAPIModel):
 
     if (hashed_password == json.loads(response.text)['password']):
         raise HTTPException(
-            status_code=response.status_code, detail={"jwt": jwt})
+            status_code=response.status_code, detail={"jwt": jwt}, headers=responseHeaders)
     else:
         raise HTTPException(status_code=401, detail={
-                            'result': 'unauthorized'})
+                            'result': 'unauthorized'}, headers=responseHeaders)
 
 
 @app.put("/api/updateUserCatalog")
