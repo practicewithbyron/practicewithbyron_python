@@ -310,7 +310,7 @@ async def login(userAPIModel: UserAPIModel):
                             'result': 'unauthorized'}, headers=responseHeaders)
 
 
-@app.put("/api/updateUserCatalog")
+@app.put("/updateUserCatalog")
 async def UpdateUserCatalog(idCatalogModel: IdCatalogModel, Authorization: str = Header(..., convert_underscores=False)):
     # Validate
     if not IsTruthy(idCatalogModel.catalogToAdd):
@@ -331,7 +331,7 @@ async def UpdateUserCatalog(idCatalogModel: IdCatalogModel, Authorization: str =
     DBRequest("PUT", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/updateUserCatalog", payload)
 
 
-@app.post("/api/readUserCatalog")
+@app.post("/readUserCatalog")
 async def ReadUserCatalog(Authorization: str = Header(..., convert_underscores=False)):
     """
     Pass through a jwt with the users id
@@ -350,7 +350,7 @@ async def ReadUserCatalog(Authorization: str = Header(..., convert_underscores=F
 # Deprecated
 
 
-@app.put("/api/forgotPassword")
+@app.put("/forgotPassword")
 async def ForgotPassword(idPasswordModel: IdPasswordModel, Authorization: str = Header(..., convert_underscores=False)):
     """
     Function for when the user forgets their password and needs to reset it
@@ -373,7 +373,7 @@ async def ForgotPassword(idPasswordModel: IdPasswordModel, Authorization: str = 
 # Questions
 
 
-@app.post("/api/readAllCatalogQuestions")
+@app.post("/readAllCatalogQuestions")
 async def ReadAllCatalogQuestions(catalogModel: CatalogModel, Authorization: str = Header(..., convert_underscores=False)):
     """
     Read all the questions from a given "catalog" e.g all the questions from the CPA-21-01
@@ -400,7 +400,7 @@ async def ReadAllCatalogQuestions(catalogModel: CatalogModel, Authorization: str
 # Incorrect Questions
 
 
-@app.post("/api/createIncorrectQuestion")
+@app.post("/createIncorrectQuestion")
 async def CreateIncorrectQuestion(incorrectQuestionModel: IncorrectQuestionModel, Authorization: str = Header(..., convert_underscores=False)):
     """
     Creates an entry for an incorrect question, e.g a question a user has got wrong which
@@ -423,7 +423,7 @@ async def CreateIncorrectQuestion(incorrectQuestionModel: IncorrectQuestionModel
     DBRequest("POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/createIncorrectQuestions", payload)
 
 
-@app.post("/api/readIncorrectQuestions")
+@app.post("/readIncorrectQuestions")
 async def ReadIncorrectQuestions(idCatalogModel: IdCatalogModel, Authorization: str = Header(..., convert_underscores=False)):
     """
     Read the incorrect questions a user has got wrong
@@ -443,7 +443,7 @@ async def ReadIncorrectQuestions(idCatalogModel: IdCatalogModel, Authorization: 
 # Catalog
 
 
-@app.post("/api/readAllCatalogs")
+@app.post("/readAllCatalogs")
 async def ReadAllCatalogs():
     """
     Reads all the catalogs available
@@ -463,7 +463,7 @@ async def ReadCatalog(catalogModel: CatalogModel):
     DBRequest("POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/readCatalog", payload)
 
 
-@app.post("/api/passwordResetRequest")
+@app.post("/passwordResetRequest")
 async def PasswordResetRequest(emailAPIModel: EmailAPIModel):
 
     # Generate a random token
@@ -518,7 +518,7 @@ async def PasswordResetRequest(emailAPIModel: EmailAPIModel):
     DBRequest("POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/passwordResetRequest", payload)
 
 
-@app.post("/api/getPasswordResetRequest")
+@app.post("/getPasswordResetRequest")
 async def GetPasswordResetRequest(tokenAPIModel: TokenAPIModel):
 
     payload = {
@@ -541,7 +541,7 @@ async def ChangePassword(userAPIModel: UserAPIModel):
 # Exam Attempts
 
 
-@app.post("/api/createExamAttempt")
+@app.post("/createExamAttempt")
 async def CreateExamAttempt(examAttemptModel: ExamAttemptModel, Authorization: str = Header(..., convert_underscores=False)):
 
     jwt = CheckJWTIsValid(Authorization)
@@ -577,7 +577,7 @@ def getAccessToken():
     return requests.post("https://api-m.sandbox.paypal.com/v1/oauth2/token", data=payload, auth=(paypalUsername, paypalPassword)).json()["access_token"]
 
 
-@app.post("/api/paypalCreateOrder")
+@app.post("/paypalCreateOrder")
 async def PaypalCreateOrder(paypalOrderModel: PaypalOrderModel):
     payload = {
         "intent": paypalOrderModel.intent,
