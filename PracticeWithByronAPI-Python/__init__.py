@@ -453,7 +453,7 @@ async def ReadAllCatalogs():
         "POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/readAllCatalogs", {})
 
 
-@app.post("/api/readCatalog")
+@app.post("readCatalog")
 async def ReadCatalog(catalogModel: CatalogModel):
 
     payload = {
