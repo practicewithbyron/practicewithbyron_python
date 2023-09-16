@@ -528,7 +528,7 @@ async def GetPasswordResetRequest(tokenAPIModel: TokenAPIModel):
     DBRequest("POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/getPasswordResetRequest", payload)
 
 
-@app.post("/api/changePassword")
+@app.post("/changePassword")
 async def ChangePassword(userAPIModel: UserAPIModel):
 
     payload = {
