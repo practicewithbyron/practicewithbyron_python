@@ -267,7 +267,7 @@ async def Register(userAPIModel: UserAPIModel):
     DBRequest("POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/createNewUser", payload)
 
 
-@app.post("/api/login")
+@app.post("/login")
 async def login(userAPIModel: UserAPIModel):
     """
     Function called to 'login' returns a jwt so the user can execute commands without logging in again
