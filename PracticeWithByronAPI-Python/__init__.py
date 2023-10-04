@@ -56,7 +56,6 @@ import base64
 # Paypal
 import uuid
 
-
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -84,6 +83,17 @@ responseHeaders = {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
     "Access-control-Allow-Headers": "Content-Type"
 }
+
+# Paypal
+isPaypalLive = False
+
+paypalSandboxUrl = "https://api-m.sandbox.paypal.com"
+paypalSandboxClientID = "AVWAK5II6VGXna6DjVCs72XbwRNlQz2q2Lub2ibFSI82pczshtph3LDkHHak9GPXnC_S8_IftQ_ziZWQ"
+paypalSandboxSecret = "ENrniU1XU4ouXhVJ84wwLkrOOgtr7CW2kdpUJANwWCMMoiZTJ7R-r2Mxsg11BCp25XotDoWiLp1qoa9m"
+
+paypalLiveUrl = "https://api-m.paypal.com"
+paypalLiveClientID = "AbNzg2jm2tPpeXVhiMRFcJRXi3Jk42SChRvA-DNXZWelre2dveiSx6p6LfMjh9jZ1Xqkwl8iyVINsBhs"
+paypalLiveSecret = "EMBSZL_o8Ok8isVRo1OghZjDArDN80rinhCqAtBmofhxmvGQexgrb-V4_MB1aCM3oVO-d-Fk4qF2rpYA"
 
 
 class TokenAPIModel(BaseModel):
@@ -502,7 +512,6 @@ async def PasswordResetRequest(emailAPIModel: EmailAPIModel):
         return jsonMy['data']
 
     def Send(subject, EEfrom, fromName, to, url, isTransactional):
-
         return sendEmail('POST', '/email/send', {
             'subject': subject,
             'from': EEfrom,
@@ -512,8 +521,8 @@ async def PasswordResetRequest(emailAPIModel: EmailAPIModel):
             "merge_url": url + "/" + token,
             'isTransactional': isTransactional})
 
-    print(Send("Password Reset", "practicewithbyron@gmail.com", "PracticeWithByron", "byzstorm1103@gmail.com;",
-               "http://localhost:3000/passwordreset", False))
+    print(Send("Password Reset", "practicewithbyron@gmail.com", "PracticeWithByron", emailAPIModel.email + ";",
+               emailAPIModel.url, False))
 
     DBRequest("POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/passwordResetRequest", payload)
 
@@ -566,39 +575,70 @@ async def CreateExamAttempt(examAttemptModel: ExamAttemptModel, Authorization: s
 
 # Paypal
 
-paypalUsername = "AVWAK5II6VGXna6DjVCs72XbwRNlQz2q2Lub2ibFSI82pczshtph3LDkHHak9GPXnC_S8_IftQ_ziZWQ"
-paypalPassword = "ENrniU1XU4ouXhVJ84wwLkrOOgtr7CW2kdpUJANwWCMMoiZTJ7R-r2Mxsg11BCp25XotDoWiLp1qoa9m"
-
-
 def getAccessToken():
+    baseUrl = paypalSandboxUrl
+    clientID = paypalSandboxClientID
+    clientSecret = paypalSandboxSecret
+    if isPaypalLive == True:
+        baseUrl = paypalLiveUrl
+        clientID = paypalLiveClientID
+        clientSecret = paypalLiveSecret
     payload = {
         "grant_type": "client_credentials"
     }
-    return requests.post("https://api-m.sandbox.paypal.com/v1/oauth2/token", data=payload, auth=(paypalUsername, paypalPassword)).json()["access_token"]
+    return requests.post(f"{baseUrl}/v1/oauth2/token", data=payload, auth=(clientID, clientSecret)).json()["access_token"]
 
 
-@app.post("/paypalCreateOrder")
-async def PaypalCreateOrder(paypalOrderModel: PaypalOrderModel):
+def createOrder(value):
+    baseUrl = paypalSandboxUrl
+    if isPaypalLive == True:
+        baseUrl = paypalLiveUrl
+
     payload = {
-        "intent": paypalOrderModel.intent,
+        "intent": "CAPTURE",
         "purchase_units": [{
             "amount": {
                 "currency_code": "GBP",
-                "value": paypalOrderModel.value
+                "value": value
             }
         }]
     }
     accessToken = getAccessToken()
     json_payload = json.dumps(payload)
-    print(accessToken)
 
-    response = requests.post("https://api-m.sandbox.paypal.com/v2/checkout/orders", headers={
+    response = requests.post(f"{baseUrl}/v2/checkout/orders", headers={
         "Content-Type": "application/json",
-        "Authorization": f"Bearer A21AAKf_Mk8iVZvcW2pyvaRHXIrXCOf8OtHgPh3kkftKkshYyaPbPf8Arg4bOW2f7NQpcgUcmed8xMxtVHTqoPMAfGQ9vvFLw",
+        "Authorization": f"Bearer " + accessToken,
         "PayPal-Request-Id": str(uuid.uuid4())
     }, data=json_payload)
 
     return json.loads(response.text)
+
+
+@app.post("/api/orders")
+async def PaypalOrders(paypalOrderModel: PaypalOrderModel):
+    jsonResponse = createOrder(paypalOrderModel.value)
+    return jsonResponse
+
+
+def captureOrder(orderID):
+    baseUrl = paypalSandboxUrl
+    if isPaypalLive == True:
+        baseUrl = paypalLiveUrl
+
+    accessToken = getAccessToken()
+
+    response = requests.post(f"{baseUrl}/v2/checkout/orders/{orderID}/capture", headers={
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer " + accessToken
+    })
+
+    return json.loads(response.text)
+
+
+@app.post("/api/orders/capture")
+async def PaypalOrders(paypalOrderId: PaypalOrderID):
+    return captureOrder(paypalOrderId.orderID)
 
 
 async def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
