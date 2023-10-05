@@ -644,7 +644,7 @@ def captureOrder(orderID):
     return json.loads(response.text)
 
 
-@app.post("/orders/capture")
+@app.post("/orderscapture")
 async def PaypalOrders(paypalOrderId: PaypalOrderID):
     return captureOrder(paypalOrderId.orderID)
 
