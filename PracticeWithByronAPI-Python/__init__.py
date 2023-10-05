@@ -151,8 +151,10 @@ class PaypalOrderModel(BaseModel):
     intent: str
     value: str
 
+
 class PaypalOrderModel(BaseModel):
     value: str
+
 
 class PaypalOrderID(BaseModel):
     orderID: str
@@ -621,7 +623,7 @@ def createOrder(value):
     return json.loads(response.text)
 
 
-@app.post("/api/orders")
+@app.post("/orders")
 async def PaypalOrders(paypalOrderModel: PaypalOrderModel):
     jsonResponse = createOrder(paypalOrderModel.value)
     return jsonResponse
@@ -642,7 +644,7 @@ def captureOrder(orderID):
     return json.loads(response.text)
 
 
-@app.post("/api/orders/capture")
+@app.post("/orders/capture")
 async def PaypalOrders(paypalOrderId: PaypalOrderID):
     return captureOrder(paypalOrderId.orderID)
 
