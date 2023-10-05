@@ -151,6 +151,12 @@ class PaypalOrderModel(BaseModel):
     intent: str
     value: str
 
+class PaypalOrderModel(BaseModel):
+    value: str
+
+class PaypalOrderID(BaseModel):
+    orderID: str
+
 
 @app.get("/api")
 async def get_data():
