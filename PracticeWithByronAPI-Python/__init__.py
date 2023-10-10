@@ -269,7 +269,7 @@ def CheckJWTIsValid(Authorization):
 # User
 
 
-@app.post("/api/register")
+@app.post("/register")
 async def Register(userAPIModel: UserAPIModel):
     # Make sure
     if not IsTruthy(userAPIModel.email, userAPIModel.password):
