@@ -160,6 +160,11 @@ class PaypalOrderID(BaseModel):
     orderID: str
 
 
+class PasswordResetRequestModel(BaseModel):
+    email: str
+    url: str
+
+
 @app.get("/api")
 async def get_data():
     return {"message": secret_key}
@@ -482,7 +487,7 @@ async def ReadCatalog(catalogModel: CatalogModel):
 
 
 @app.post("/passwordResetRequest")
-async def PasswordResetRequest(emailAPIModel: EmailAPIModel):
+async def PasswordResetRequest(passwordResetRequestModel: PasswordResetRequestModel):
 
     # Generate a random token
     token_length = 32  # Adjust the length as needed
@@ -490,7 +495,7 @@ async def PasswordResetRequest(emailAPIModel: EmailAPIModel):
     token = base64.urlsafe_b64encode(random_bytes).rstrip(b'=').decode('utf-8')
 
     payload = {
-        "email": emailAPIModel.email,
+        "email": passwordResetRequestModel.email,
         "token": token
     }
 
@@ -529,8 +534,8 @@ async def PasswordResetRequest(emailAPIModel: EmailAPIModel):
             "merge_url": url + "/" + token,
             'isTransactional': isTransactional})
 
-    print(Send("Password Reset", "practicewithbyron@gmail.com", "PracticeWithByron", emailAPIModel.email + ";",
-               emailAPIModel.url, False))
+    print(Send("Password Reset", "practicewithbyron@gmail.com", "PracticeWithByron", passwordResetRequestModel.email + ";",
+               passwordResetRequestModel.url, False))
 
     DBRequest("POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/passwordResetRequest", payload)
 
