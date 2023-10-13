@@ -611,7 +611,7 @@ def createOrder(value):
         "intent": "CAPTURE",
         "purchase_units": [{
             "amount": {
-                "currency_code": "GBP",
+                "currency_code": "USD",
                 "value": value
             }
         }]
