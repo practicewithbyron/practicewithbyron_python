@@ -88,8 +88,8 @@ responseHeaders = {
 isPaypalLive = False
 
 paypalSandboxUrl = "https://api-m.sandbox.paypal.com"
-paypalSandboxClientID = "AVWAK5II6VGXna6DjVCs72XbwRNlQz2q2Lub2ibFSI82pczshtph3LDkHHak9GPXnC_S8_IftQ_ziZWQ"
-paypalSandboxSecret = "ENrniU1XU4ouXhVJ84wwLkrOOgtr7CW2kdpUJANwWCMMoiZTJ7R-r2Mxsg11BCp25XotDoWiLp1qoa9m"
+paypalSandboxClientID = "AZpDtgm8VQsXV03gURgpIkxH5eP4MAxxVCqgWMjuCV1qbsdv4oJYInftxx2y9_rtbtjwSHIClJY-piq4"
+paypalSandboxSecret = "EFDIB9xSXD1aeMa9LFnH5w-afuWt4KWYgRP1LfsYVTM28Cn5QGm1uZbu7b4iwc67hUJ0tCC-YQGgXVf7"
 
 paypalLiveUrl = "https://api-m.paypal.com"
 paypalLiveClientID = "AbNzg2jm2tPpeXVhiMRFcJRXi3Jk42SChRvA-DNXZWelre2dveiSx6p6LfMjh9jZ1Xqkwl8iyVINsBhs"
