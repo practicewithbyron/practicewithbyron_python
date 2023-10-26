@@ -333,7 +333,7 @@ async def login(userAPIModel: UserAPIModel):
                             'result': 'unauthorized'}, headers=responseHeaders)
 
 
-@app.put("/updateUserCatalog")
+@app.post("/updateUserCatalog")
 async def UpdateUserCatalog(idCatalogModel: IdCatalogModel, Authorization: str = Header(..., convert_underscores=False)):
     # Validate
     if not IsTruthy(idCatalogModel.catalogToAdd):
