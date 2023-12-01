@@ -71,6 +71,7 @@ load_dotenv()
 
 secret_key = os.environ["JWT_KEY"]
 api_key = os.environ["API_KEY"]
+subscription_key = os.environ["SUBSCRIPTION_KEY"]
 
 headers = {
     'Content-Type': 'application/json',
@@ -163,16 +164,6 @@ class PaypalOrderID(BaseModel):
 class PasswordResetRequestModel(BaseModel):
     email: str
     url: str
-
-
-@app.get("/api")
-async def get_data():
-    return {"message": secret_key}
-
-
-@app.post("/body")
-async def test_body(userAPIModel: UserAPIModel):
-    return {"email": userAPIModel.email, "password": userAPIModel.password}
 
 
 def ErrorJson(e):
@@ -271,12 +262,22 @@ def CheckJWTIsValid(Authorization):
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="JWT expired")
 
+
+# Subscription
+
+def IsSubscriptionCorrect(sub):
+    if sub != subscription_key:
+        raise HTTPException(
+            status_code=401, detail="Incorrect subscription key")
+
 # User
 
 
 @app.post("/register")
-async def Register(userAPIModel: UserAPIModel):
+async def Register(userAPIModel: UserAPIModel, Subscription: str = Header(..., convert_underscores=False)):
     # Make sure
+    IsSubscriptionCorrect(Subscription)
+
     if not IsTruthy(userAPIModel.email, userAPIModel.password):
         raise HTTPException(
             status_code=400, detail="Invalid email or password")
@@ -291,12 +292,14 @@ async def Register(userAPIModel: UserAPIModel):
 
 
 @app.post("/login")
-async def login(userAPIModel: UserAPIModel):
+async def login(userAPIModel: UserAPIModel, Subscription: str = Header(..., convert_underscores=False)):
     """
     Function called to 'login' returns a jwt so the user can execute commands without logging in again
     :param userAPIModel: A model with a username and password
     :return: JWT with a payload including the users id, email, catalog, jwt exp and whether they're admin
     """
+    IsSubscriptionCorrect(Subscription)
+
     if not IsTruthy(userAPIModel.email, userAPIModel.password):
         raise HTTPException(
             status_code=400, detail="Invalid email or password", headers=responseHeaders)
@@ -334,7 +337,9 @@ async def login(userAPIModel: UserAPIModel):
 
 
 @app.post("/updateUserCatalog")
-async def UpdateUserCatalog(idCatalogModel: IdCatalogModel, Authorization: str = Header(..., convert_underscores=False)):
+async def UpdateUserCatalog(idCatalogModel: IdCatalogModel, Authorization: str = Header(..., convert_underscores=False), Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
+
     # Validate
     if not IsTruthy(idCatalogModel.catalogToAdd):
         raise HTTPException(
@@ -355,13 +360,14 @@ async def UpdateUserCatalog(idCatalogModel: IdCatalogModel, Authorization: str =
 
 
 @app.post("/readUserCatalog")
-async def ReadUserCatalog(Authorization: str = Header(..., convert_underscores=False)):
+async def ReadUserCatalog(Authorization: str = Header(..., convert_underscores=False), Subscription: str = Header(..., convert_underscores=False)):
     """
     Pass through a jwt with the users id
     :param Authorization: encrypted jwt
     :return: An array of strings e.g ["JSA-41-01", "CPA-21-01"]
     """
-    print(Authorization)
+    IsSubscriptionCorrect(Subscription)
+
     jwt = CheckJWTIsValid(Authorization)
 
     payload = {
@@ -374,13 +380,15 @@ async def ReadUserCatalog(Authorization: str = Header(..., convert_underscores=F
 
 
 @app.put("/forgotPassword")
-async def ForgotPassword(idPasswordModel: IdPasswordModel, Authorization: str = Header(..., convert_underscores=False)):
+async def ForgotPassword(idPasswordModel: IdPasswordModel, Authorization: str = Header(..., convert_underscores=False), Subscription: str = Header(..., convert_underscores=False)):
     """
     Function for when the user forgets their password and needs to reset it
     :param idPasswordModel:  Model with a password
     :param Authorization: jwt
     :return: Returns response message
     """
+    IsSubscriptionCorrect(Subscription)
+
     jwt = CheckJWTIsValid(Authorization)
 
     if not IsTruthy(idPasswordModel.password):
@@ -397,13 +405,15 @@ async def ForgotPassword(idPasswordModel: IdPasswordModel, Authorization: str = 
 
 
 @app.post("/readAllCatalogQuestions")
-async def ReadAllCatalogQuestions(catalogModel: CatalogModel, Authorization: str = Header(..., convert_underscores=False)):
+async def ReadAllCatalogQuestions(catalogModel: CatalogModel, Authorization: str = Header(..., convert_underscores=False), Subscription: str = Header(..., convert_underscores=False)):
     """
     Read all the questions from a given "catalog" e.g all the questions from the CPA-21-01
     :param catalogModel: Model with the name of the catalog
     :param Authorization: jwt
     :return: A response message
     """
+    IsSubscriptionCorrect(Subscription)
+
     if not IsTruthy(catalogModel.catalogName,):
         raise HTTPException(status_code=400, detail="Invalid request body")
 
@@ -424,7 +434,7 @@ async def ReadAllCatalogQuestions(catalogModel: CatalogModel, Authorization: str
 
 
 @app.post("/createIncorrectQuestion")
-async def CreateIncorrectQuestion(incorrectQuestionModel: IncorrectQuestionModel, Authorization: str = Header(..., convert_underscores=False)):
+async def CreateIncorrectQuestion(incorrectQuestionModel: IncorrectQuestionModel, Authorization: str = Header(..., convert_underscores=False), Subscription: str = Header(..., convert_underscores=False)):
     """
     Creates an entry for an incorrect question, e.g a question a user has got wrong which
     can be easily retreived.
@@ -432,6 +442,8 @@ async def CreateIncorrectQuestion(incorrectQuestionModel: IncorrectQuestionModel
     :param Authorization: jwt
     :return: Response
     """
+    IsSubscriptionCorrect(Subscription)
+
     if not IsTruthy(incorrectQuestionModel.catalogItem, incorrectQuestionModel.questions):
         raise HTTPException(status_code=400, detail="Invalid request body")
 
@@ -447,13 +459,15 @@ async def CreateIncorrectQuestion(incorrectQuestionModel: IncorrectQuestionModel
 
 
 @app.post("/readIncorrectQuestions")
-async def ReadIncorrectQuestions(idCatalogModel: IdCatalogModel, Authorization: str = Header(..., convert_underscores=False)):
+async def ReadIncorrectQuestions(idCatalogModel: IdCatalogModel, Authorization: str = Header(..., convert_underscores=False), Subscription: str = Header(..., convert_underscores=False)):
     """
     Read the incorrect questions a user has got wrong
     :param Authorization: jwt
     :param idCatalogModel: Get the incorrect questions for a specific catalog item
     :return: All the questions a user has got wrong
     """
+    IsSubscriptionCorrect(Subscription)
+
     jwt = CheckJWTIsValid(Authorization)
 
     payload = {
@@ -467,17 +481,20 @@ async def ReadIncorrectQuestions(idCatalogModel: IdCatalogModel, Authorization: 
 
 
 @app.post("/readAllCatalogs")
-async def ReadAllCatalogs():
+async def ReadAllCatalogs(Subscription: str = Header(..., convert_underscores=False)):
     """
     Reads all the catalogs available
     :return: An array of all the catalog objects e.g [{name: "JSA-41-01", ...}, {name: "CPA-21-01", ...}]
     """
+    IsSubscriptionCorrect(Subscription)
+
     DBRequest(
         "POST", "https://eu-west-2.aws.data.mongodb-api.com/app/data-vghcq/endpoint/api/readAllCatalogs", {})
 
 
 @app.post("/readCatalog")
-async def ReadCatalog(catalogModel: CatalogModel):
+async def ReadCatalog(catalogModel: CatalogModel, Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
 
     payload = {
         "catalogName": catalogModel.catalogName
@@ -487,7 +504,8 @@ async def ReadCatalog(catalogModel: CatalogModel):
 
 
 @app.post("/passwordResetRequest")
-async def PasswordResetRequest(passwordResetRequestModel: PasswordResetRequestModel):
+async def PasswordResetRequest(passwordResetRequestModel: PasswordResetRequestModel, Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
 
     # Generate a random token
     token_length = 32  # Adjust the length as needed
@@ -541,7 +559,8 @@ async def PasswordResetRequest(passwordResetRequestModel: PasswordResetRequestMo
 
 
 @app.post("/getPasswordResetRequest")
-async def GetPasswordResetRequest(tokenAPIModel: TokenAPIModel):
+async def GetPasswordResetRequest(tokenAPIModel: TokenAPIModel, Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
 
     payload = {
         "token": tokenAPIModel.token
@@ -551,7 +570,8 @@ async def GetPasswordResetRequest(tokenAPIModel: TokenAPIModel):
 
 
 @app.post("/changePassword")
-async def ChangePassword(userAPIModel: UserAPIModel):
+async def ChangePassword(userAPIModel: UserAPIModel, Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
 
     payload = {
         "email": userAPIModel.email,
@@ -564,7 +584,8 @@ async def ChangePassword(userAPIModel: UserAPIModel):
 
 
 @app.post("/createExamAttempt")
-async def CreateExamAttempt(examAttemptModel: ExamAttemptModel, Authorization: str = Header(..., convert_underscores=False)):
+async def CreateExamAttempt(examAttemptModel: ExamAttemptModel, Authorization: str = Header(..., convert_underscores=False), Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
 
     jwt = CheckJWTIsValid(Authorization)
 
@@ -629,8 +650,11 @@ def createOrder(value):
 
 
 @app.post("/orders")
-async def PaypalOrders(paypalOrderModel: PaypalOrderModel):
+async def PaypalOrders(paypalOrderModel: PaypalOrderModel, Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
+
     jsonResponse = createOrder(paypalOrderModel.value)
+
     return jsonResponse
 
 
@@ -650,7 +674,9 @@ def captureOrder(orderID):
 
 
 @app.post("/orderscapture")
-async def PaypalOrders(paypalOrderId: PaypalOrderID):
+async def PaypalOrders(paypalOrderId: PaypalOrderID, Subscription: str = Header(..., convert_underscores=False)):
+    IsSubscriptionCorrect(Subscription)
+
     return captureOrder(paypalOrderId.orderID)
 
 
