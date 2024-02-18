@@ -223,10 +223,11 @@ def DBRequest(method, url, payload):
         UserIdErrorResponse(response.text)
         UpdateErrorResponse(response.text)
         ErrorResponse(response.text)
-
+        logging.info(f"Response - ${response.text}")
         raise HTTPException(status_code=response.status_code,
                             detail=json.loads(response.text))
     else:
+        logging.info(f"Response - ${response.reason}")
         raise HTTPException(status_code=response.status_code,
                             detail=response.reason)
 
